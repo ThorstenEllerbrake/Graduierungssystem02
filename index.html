@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graduierungssystem – Bewertungsmatrix</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #6b7280;
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --line: #e2e6ea;
+    --navy: #0D1B2A;
+
+    --s1-border: #546E7A; --s1-fill: #ECEFF1;
+    --s2-border: #00796B; --s2-fill: #E0F2F1;
+    --s3-border: #B8860B; --s3-fill: #FFF8E1;
+    --s4-border: #3F51B5; --s4-fill: #E8EAF6;
+
+    --warn-border: #F9A825; --warn-fill: #FFFDE7;
+    --danger-border: #C62828; --danger-fill: #FFEBEE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 1.5rem 1rem 4rem;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header.page { margin-bottom: 1.4rem; }
+  header.page h1 {
+    font-size: 1.5rem;
+    color: var(--navy);
+    margin: 0 0 0.15rem;
+  }
+  header.page p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  .addbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.3rem;
+  }
+  .addbar input {
+    flex: 1;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: var(--card);
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: filter 0.12s ease, transform 0.05s ease;
+  }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.15); }
+  .btn-ghost { background: #eef1f4; color: var(--navy); }
+  .btn-ghost:hover:not(:disabled) { filter: brightness(0.96); }
+  .btn-warn { background: var(--warn-fill); color: #7a5b00; border: 1px solid var(--warn-border); }
+  .btn-warn:hover:not(:disabled) { filter: brightness(0.97); }
+  .btn-danger { background: var(--danger-fill); color: #8c1c1c; border: 1px solid var(--danger-border); }
+  .btn-danger:hover:not(:disabled) { filter: brightness(0.97); }
+  .btn-small { padding: 0.4rem 0.7rem; font-size: 0.78rem; }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 3rem 1rem;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px dashed var(--line);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.9rem 1.1rem;
+    flex-wrap: wrap;
+  }
+  .card-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy);
+    flex: 1;
+    min-width: 120px;
+  }
+  .card-name input {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.15rem 0.4rem;
+    font-family: inherit;
+    width: 100%;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .flag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .flag-warn { background: var(--warn-fill); color: #7a5b00; border: 1px solid var(--warn-border); }
+  .flag-prob { background: var(--danger-fill); color: #8c1c1c; border: 1px solid var(--danger-border); }
+  .flag-info { background: #eef1f4; color: var(--navy); }
+
+  .card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0 1.1rem 1rem;
+  }
+
+  .panel {
+    border-top: 1px solid var(--line);
+    padding: 1rem 1.1rem 1.1rem;
+    display: none;
+    background: #fafbfc;
+  }
+  .panel.open { display: block; }
+  .panel h4 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--navy);
+  }
+  .crit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .crit-item input[type="checkbox"] { margin-top: 0.2rem; width: 16px; height: 16px; flex-shrink: 0; }
+  .note-row {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.8rem 0;
+  }
+  .note-row input {
+    flex: 1;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 0.87rem;
+    font-family: inherit;
+  }
+  .num-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.6rem 0;
+    font-size: 0.87rem;
+  }
+  .num-row input {
+    width: 55px;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-family: inherit;
+    text-align: center;
+  }
+  .panel-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.7rem; }
+
+  table.history { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  table.history th, table.history td {
+    text-align: left;
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.history th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .hist-empty { color: var(--muted); font-size: 0.85rem; padding: 0.5rem 0; }
+
+  .toast {
+    position: fixed;
+    bottom: 1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: #fff;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; }
+
+  .stage-progress { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <h1>Graduierungssystem &ndash; Bewertungsmatrix</h1>
+    <p>WPK Naturwissenschaften &middot; Heinrich-Nordhoff-Gesamtschule Wolfsburg &middot; Startteam &rarr; Lernteam &rarr; Expertenteam &rarr; Profiteam</p>
+  </header>
+
+  <div class="addbar">
+    <input type="text" id="newGroupName" placeholder="Neue Gruppe anlegen, z. B. 'Gruppe Rot'" maxlength="60">
+    <button class="btn-primary" id="addGroupBtn">+ Gruppe</button>
+  </div>
+  <div class="addbar" style="margin-top:-0.7rem;">
+    <button class="btn-ghost btn-small" id="exportBtn">Daten exportieren (Backup)</button>
+    <button class="btn-ghost btn-small" id="importBtn">Daten importieren</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+  </div>
+
+  <div id="groupList"></div>
+  <div class="footer-note">Alle Daten werden lokal in diesem Browser auf diesem Gerät gespeichert und bleiben über das ganze Schuljahr erhalten. Erstelle regelmäßig ein Backup über „Daten exportieren“.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STAGES = [
+  null,
+  { id: 1, name: "Startteam", border: "var(--s1-border)", fill: "var(--s1-fill)" },
+  { id: 2, name: "Lernteam", border: "var(--s2-border)", fill: "var(--s2-fill)" },
+  { id: 3, name: "Expertenteam", border: "var(--s3-border)", fill: "var(--s3-fill)" },
+  { id: 4, name: "Profiteam", border: "var(--s4-border)", fill: "var(--s4-fill)" },
+];
+
+const UPGRADE_CRITERIA = {
+  2: [
+    "Termine wurden eingehalten",
+    "Portfolio und KI-Dokumentation sind vollständig, ehrlich geführt und wurden regelmäßig von der Gruppe aus gezeigt",
+    "Keine Regelverstöße, faire Zusammenarbeit in der Gruppe",
+    "Das Pensum pro Block wurde im erwarteten Rahmen geschafft",
+  ],
+  3: [
+    "Die Gruppe plant ihre Zeit im Block eigenständig und hält sie ein",
+    "Die KI-Reflexionen gehen über das Minimum hinaus",
+    "Alle Stufe-1-Kriterien werden weiterhin zuverlässig erfüllt",
+  ],
+  4: [
+    "Die Gruppe kann Quellen nachweislich kritisch einordnen",
+    "Die KI-Dokumentation ist vorbildlich und eigenständig",
+    "Die Gruppe arbeitet über mehr als eine Reihe hinweg konstant selbstständig",
+  ],
+};
+
+const STORAGE_KEY = "graduierung-data";
+let state = { groups: [] };
+let openPanels = {}; // groupId -> 'aufstieg' | 'verlauf' | 'bearbeiten' | null
+let transientChecks = {}; // groupId -> Set of checked criteria indices
+let transientNotes = {}; // groupId -> note string
+let transientProbation = {}; // groupId -> number
+
+function uid() { return "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+function fmtDate(ts) {
+  return new Date(ts).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch (e) {
+    state = { groups: [] };
+  }
+  render();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    showToast("Speichern fehlgeschlagen \u2013 bitte Seite nicht schlie\u00dfen.");
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+function addHistory(group, type, text, fromStage, toStage) {
+  group.history.unshift({ ts: Date.now(), type, text, fromStage, toStage });
+}
+
+function findGroup(id) { return state.groups.find((g) => g.id === id); }
+
+// ============================== ACTIONS ==============================
+
+function addGroup() {
+  const input = document.getElementById("newGroupName");
+  const name = input.value.trim();
+  if (!name) return;
+  const g = {
+    id: uid(),
+    name,
+    stage: 1,
+    hasWarning: false,
+    probation: 0,
+    blocksAtStage: 0,
+    history: [],
+  };
+  addHistory(g, "info", "Gruppe angelegt (Startteam)", null, 1);
+  state.groups.push(g);
+  input.value = "";
+  saveState();
+  render();
+  showToast(`„${name}“ angelegt`);
+}
+
+function togglePanel(groupId, panel) {
+  openPanels[groupId] = openPanels[groupId] === panel ? null : panel;
+  if (openPanels[groupId] === "aufstieg") transientChecks[groupId] = new Set();
+  render();
+}
+
+function toggleCriterion(groupId, idx) {
+  if (!transientChecks[groupId]) transientChecks[groupId] = new Set();
+  const set = transientChecks[groupId];
+  if (set.has(idx)) set.delete(idx); else set.add(idx);
+  render();
+}
+
+function confirmUpgrade(groupId, manual) {
+  const g = findGroup(groupId);
+  if (!g || g.stage >= 4) return;
+  const target = g.stage + 1;
+  const note = (transientNotes[groupId] || "").trim();
+  const from = g.stage;
+  g.stage = target;
+  g.blocksAtStage = 0;
+  const label = STAGES[target].name;
+  const suffix = note ? ` \u2013 Notiz: ${note}` : "";
+  addHistory(g, "aufstieg", `${manual ? "Manuell hochgestuft" : "Aufstieg bestätigt"} auf ${label}${suffix}`, from, target);
+  openPanels[groupId] = null;
+  transientChecks[groupId] = new Set();
+  transientNotes[groupId] = "";
+  saveState();
+  render();
+  showToast(`${g.name}: Aufstieg zu ${label}`);
+}
+
+function stayAtStage(groupId) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  const target = g.stage + 1;
+  const criteria = UPGRADE_CRITERIA[target] || [];
+  const checked = transientChecks[groupId] || new Set();
+  const note = (transientNotes[groupId] || "").trim();
+  const metCount = checked.size;
+  const totalCount = criteria.length;
+  const suffix = note ? ` \u2013 Notiz: ${note}` : "";
+  addHistory(g, "info", `Bewertet und auf Stufe ${g.stage} belassen (${metCount}/${totalCount} Kriterien für Stufe ${target} erfüllt)${suffix}`, g.stage, g.stage);
+  openPanels[groupId] = null;
+  transientChecks[groupId] = new Set();
+  transientNotes[groupId] = "";
+  saveState();
+  render();
+  showToast(`${g.name}: auf Stufe ${g.stage} belassen`);
+}
+
+function minorViolation(groupId) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  const note = (transientNotes[groupId] || "").trim();
+  const suffix = note ? ` \u2013 Notiz: ${note}` : "";
+  if (!g.hasWarning) {
+    g.hasWarning = true;
+    addHistory(g, "warn", `Verwarnung ausgesprochen${suffix}`, g.stage, g.stage);
+    showToast(`${g.name}: Verwarnung notiert`);
+  } else {
+    const from = g.stage;
+    const to = Math.max(1, g.stage - 1);
+    g.stage = to;
+    g.hasWarning = false;
+    g.blocksAtStage = 0;
+    const prob = transientProbation[groupId] ?? 1;
+    g.probation = prob;
+    addHistory(g, "downgrade", `Rückstufung um 1 Stufe (zweiter Verstoß trotz Verwarnung), Bewährung: ${prob} Block(e)${suffix}`, from, to);
+    showToast(`${g.name}: Rückstufung auf ${STAGES[to].name}`);
+  }
+  transientNotes[groupId] = "";
+  openPanels[groupId] = null;
+  saveState();
+  render();
+}
+
+function majorViolation(groupId) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  const note = (transientNotes[groupId] || "").trim();
+  const suffix = note ? ` \u2013 Notiz: ${note}` : "";
+  const from = g.stage;
+  const to = Math.max(1, g.stage - 2);
+  g.stage = to;
+  g.hasWarning = false;
+  g.blocksAtStage = 0;
+  const prob = transientProbation[groupId] ?? 2;
+  g.probation = prob;
+  addHistory(g, "downgrade", `Sofortige Rückstufung um 2 Stufen (schwerer Verstoß), Bewährung: ${prob} Block(e)${suffix}`, from, to);
+  transientNotes[groupId] = "";
+  openPanels[groupId] = null;
+  saveState();
+  render();
+  showToast(`${g.name}: Rückstufung auf ${STAGES[to].name}`);
+}
+
+function completeBlock(groupId) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  g.blocksAtStage += 1;
+  if (g.probation > 0) {
+    g.probation -= 1;
+    addHistory(g, "info", `Block abgeschlossen \u2013 Bewährung verbleibend: ${g.probation} Block(e)`, g.stage, g.stage);
+    if (g.probation === 0) showToast(`${g.name}: Bewährungsphase beendet`);
+  } else {
+    addHistory(g, "info", `Block abgeschlossen (${g.blocksAtStage}. Block auf dieser Stufe)`, g.stage, g.stage);
+  }
+  saveState();
+  render();
+}
+
+function manualSetStage(groupId, newStage) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  newStage = parseInt(newStage, 10);
+  if (newStage === g.stage) return;
+  const note = (transientNotes[groupId] || "").trim();
+  const suffix = note ? ` \u2013 Notiz: ${note}` : "";
+  const from = g.stage;
+  g.stage = newStage;
+  g.blocksAtStage = 0;
+  addHistory(g, "manuell", `Manuell auf ${STAGES[newStage].name} gesetzt${suffix}`, from, newStage);
+  transientNotes[groupId] = "";
+  openPanels[groupId] = null;
+  saveState();
+  render();
+  showToast(`${g.name}: manuell auf ${STAGES[newStage].name} gesetzt`);
+}
+
+function renameGroup(groupId, newName) {
+  const g = findGroup(groupId);
+  if (!g) return;
+  newName = newName.trim();
+  if (!newName || newName === g.name) return;
+  g.name = newName;
+  saveState();
+  render();
+}
+
+let deleteArmed = {};
+function deleteGroup(groupId) {
+  if (!deleteArmed[groupId]) {
+    deleteArmed[groupId] = true;
+    render();
+    setTimeout(() => { deleteArmed[groupId] = false; render(); }, 3000);
+    return;
+  }
+  state.groups = state.groups.filter((g) => g.id !== groupId);
+  delete deleteArmed[groupId];
+  saveState();
+  render();
+  showToast("Gruppe gelöscht");
+}
+
+// ============================== RENDER ==============================
+
+function stageBadge(stageId) {
+  const s = STAGES[stageId];
+  return `<span class="badge" style="background:${s.fill};color:${s.border};border:1px solid ${s.border};">
+    <span class="dot" style="background:${s.border};"></span>Stufe ${s.id} &middot; ${s.name}
+  </span>`;
+}
+
+function renderCriteriaPanel(g) {
+  if (g.stage >= 4) {
+    return `<div class="panel open"><p style="margin:0;color:var(--muted);font-size:0.9rem;">Profiteam ist die höchste Stufe \u2013 kein weiterer Aufstieg möglich.</p></div>`;
+  }
+  if (g.probation > 0) {
+    return `<div class="panel open">
+      <p style="margin:0 0 0.6rem;font-size:0.9rem;">Die Gruppe befindet sich in der <strong>Bewährungsphase</strong> (noch ${g.probation} Block${g.probation === 1 ? "" : "e"}). Ein Aufstieg ist erst danach möglich.</p>
+      <div class="panel-actions">
+        <button class="btn-ghost btn-small" onclick="completeBlock('${g.id}')">Block abschließen</button>
+      </div>
+    </div>`;
+  }
+  const target = g.stage + 1;
+  const criteria = UPGRADE_CRITERIA[target];
+  const checked = transientChecks[g.id] || new Set();
+  const allChecked = checked.size === criteria.length;
+  const items = criteria
+    .map(
+      (c, i) => `<label class="crit-item">
+        <input type="checkbox" ${checked.has(i) ? "checked" : ""} onchange="toggleCriterion('${g.id}', ${i})">
+        <span>${c}</span>
+      </label>`
+    )
+    .join("");
+  return `<div class="panel open">
+    <h4>Kriterien für Stufe ${target} &middot; ${STAGES[target].name}</h4>
+    ${items}
+    <div class="note-row">
+      <input type="text" placeholder="Notiz (optional)" value="${(transientNotes[g.id] || "").replace(/"/g, "&quot;")}" oninput="transientNotes['${g.id}']=this.value">
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary" ${allChecked ? "" : "disabled"} onclick="confirmUpgrade('${g.id}', false)">Aufstieg bestätigen</button>
+      <button class="btn-ghost btn-small" onclick="stayAtStage('${g.id}')">Bewertung speichern &ndash; auf Stufe ${g.stage} belassen</button>
+      <button class="btn-ghost btn-small" onclick="confirmUpgrade('${g.id}', true)">Trotzdem manuell hochstufen</button>
+    </div>
+  </div>`;
+}
+
+function renderVerstossPanel(g, type) {
+  const isMajor = type === "major";
+  const defaultProb = isMajor ? 2 : 1;
+  if (transientProbation[g.id] === undefined) transientProbation[g.id] = defaultProb;
+  return `<div class="panel open">
+    <h4>${isMajor ? "Schwerer Verstoß \u2013 sofortige Rückstufung um 2 Stufen" : (g.hasWarning ? "Zweiter Verstoß trotz Verwarnung \u2013 Rückstufung um 1 Stufe" : "Kleinerer Verstoß \u2013 Verwarnung")}</h4>
+    <div class="note-row">
+      <input type="text" placeholder="Notiz (optional, z. B. was ist passiert)" value="${(transientNotes[g.id] || "").replace(/"/g, "&quot;")}" oninput="transientNotes['${g.id}']=this.value">
+    </div>
+    ${
+      isMajor || g.hasWarning
+        ? `<div class="num-row">Bewährungsphase (Blöcke): <input type="number" min="1" max="4" value="${transientProbation[g.id]}" oninput="transientProbation['${g.id}']=parseInt(this.value||'${defaultProb}',10)"></div>`
+        : ""
+    }
+    <div class="panel-actions">
+      <button class="btn-danger" onclick="${isMajor ? `majorViolation('${g.id}')` : `minorViolation('${g.id}')`}">Bestätigen</button>
+      <button class="btn-ghost btn-small" onclick="togglePanel('${g.id}', null)">Abbrechen</button>
+    </div>
+  </div>`;
+}
+
+function renderBearbeitenPanel(g) {
+  return `<div class="panel open">
+    <h4>Stufe manuell setzen</h4>
+    <div class="note-row">
+      <select id="manual-select-${g.id}" style="flex:1;padding:0.45rem 0.7rem;border:1px solid var(--line);border-radius:7px;font-family:inherit;">
+        ${STAGES.slice(1)
+          .map((s) => `<option value="${s.id}" ${s.id === g.stage ? "selected" : ""}>Stufe ${s.id} \u00b7 ${s.name}</option>`)
+          .join("")}
+      </select>
+    </div>
+    <div class="note-row">
+      <input type="text" placeholder="Notiz (optional, z. B. Grund)" value="${(transientNotes[g.id] || "").replace(/"/g, "&quot;")}" oninput="transientNotes['${g.id}']=this.value">
+    </div>
+    <div class="panel-actions">
+      <button class="btn-primary" onclick="manualSetStage('${g.id}', document.getElementById('manual-select-${g.id}').value)">Setzen</button>
+      <button class="btn-danger btn-small" onclick="deleteGroup('${g.id}')">${deleteArmed[g.id] ? "Wirklich löschen?" : "Gruppe löschen"}</button>
+    </div>
+  </div>`;
+}
+
+function renderHistoryPanel(g) {
+  if (!g.history.length) return `<div class="panel open"><div class="hist-empty">Noch kein Verlauf.</div></div>`;
+  const rows = g.history
+    .map((h) => {
+      const stageChange = h.fromStage && h.toStage && h.fromStage !== h.toStage ? `Stufe ${h.fromStage} → ${h.toStage}` : "\u2013";
+      return `<tr><td>${fmtDate(h.ts)}</td><td>${h.text}</td><td>${stageChange}</td></tr>`;
+    })
+    .join("");
+  return `<div class="panel open">
+    <h4>Verlauf</h4>
+    <table class="history">
+      <tr><th>Datum</th><th>Ereignis</th><th>Stufenwechsel</th></tr>
+      ${rows}
+    </table>
+  </div>`;
+}
+
+function render() {
+  const list = document.getElementById("groupList");
+  if (!state.groups.length) {
+    list.innerHTML = `<div class="empty">Noch keine Gruppen angelegt. Fügt oben eure erste Gruppe hinzu.</div>`;
+    return;
+  }
+  const sorted = [...state.groups].sort((a, b) => a.name.localeCompare(b.name, "de"));
+  list.innerHTML = sorted
+    .map((g) => {
+      const open = openPanels[g.id];
+      let panelHtml = "";
+      if (open === "aufstieg") panelHtml = renderCriteriaPanel(g);
+      else if (open === "minor") panelHtml = renderVerstossPanel(g, "minor");
+      else if (open === "major") panelHtml = renderVerstossPanel(g, "major");
+      else if (open === "bearbeiten") panelHtml = renderBearbeitenPanel(g);
+      else if (open === "verlauf") panelHtml = renderHistoryPanel(g);
+
+      const flags = [];
+      if (g.hasWarning) flags.push(`<span class="flag flag-warn">⚠ Verwarnung aktiv</span>`);
+      if (g.probation > 0) flags.push(`<span class="flag flag-prob">Bewährung: ${g.probation} Block${g.probation === 1 ? "" : "e"}</span>`);
+
+      return `<div class="card">
+        <div class="card-head">
+          ${stageBadge(g.stage)}
+          <span class="card-name">${g.name}</span>
+          ${flags.join("")}
+          <span class="stage-progress">${g.blocksAtStage} Block${g.blocksAtStage === 1 ? "" : "e"} auf dieser Stufe</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-primary btn-small" onclick="togglePanel('${g.id}', 'aufstieg')">${g.stage >= 4 ? "Höchste Stufe" : "Aufstieg prüfen"}</button>
+          <button class="btn-warn btn-small" onclick="togglePanel('${g.id}', 'minor')">Kleinerer Verstoß</button>
+          <button class="btn-danger btn-small" onclick="togglePanel('${g.id}', 'major')">Schwerer Verstoß</button>
+          <button class="btn-ghost btn-small" onclick="completeBlock('${g.id}')">Block abgeschlossen</button>
+          <button class="btn-ghost btn-small" onclick="togglePanel('${g.id}', 'verlauf')">Verlauf (${g.history.length})</button>
+          <button class="btn-ghost btn-small" onclick="togglePanel('${g.id}', 'bearbeiten')">Bearbeiten</button>
+        </div>
+        ${panelHtml}
+      </div>`;
+    })
+    .join("");
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `graduierungssystem_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup heruntergeladen");
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      if (!imported.groups) throw new Error("ungueltig");
+      state = imported;
+      saveState();
+      render();
+      showToast("Daten importiert");
+    } catch (e) {
+      showToast("Import fehlgeschlagen \u2013 ungültige Datei");
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById("addGroupBtn").addEventListener("click", addGroup);
+document.getElementById("newGroupName").addEventListener("keydown", (e) => { if (e.key === "Enter") addGroup(); });
+document.getElementById("exportBtn").addEventListener("click", exportData);
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", (e) => {
+  if (e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = "";
+});
+
+loadState();
+</script>
+</body>
+</html>
